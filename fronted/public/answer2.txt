@@ -1,0 +1,5 @@
+- Predictive Analytics: Used in forecasting, such as predicting sales, stock prices, or housing prices based on historical data.
+
+- Risk Assessment: Helps in assessing risks in insurance and finance by modeling the relationship between variables like age, income, or claims history and the likelihood of an event.
+
+- Healthcare: Used to predict patient outcomes, such as disease progression or hospital readmission rates, based on clinical data and patient history.

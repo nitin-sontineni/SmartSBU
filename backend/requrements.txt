@@ -1,0 +1,19 @@
+Login/Sign up page:
+1. Simple login flow or integrate Google auth?
+
+Dashboard page:
+1. List the courses created by the user(Retrive from the DB using login-id(username)
+2. Add newly created course to DB(subject, course id)
+
+Course Page:
+1. List the files uploaded by the user on the left(Retrieve from the DB using login-id and course-id
+2. Add newly uploaded files to the DB
+
+
+DB Design:
+1. Users (username, course number, list of document_id)
+
+2. Courses (course_number, list of document_ids)
+
+3. Files (document_id, content)
+
