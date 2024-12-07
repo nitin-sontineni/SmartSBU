@@ -3,6 +3,7 @@ import { auth } from "./firebaseConfig";
 import { signInWithPopup, GoogleAuthProvider, signOut } from "firebase/auth";
 import { ThemeProvider, createTheme } from "@mui/material/styles";
 import { useNavigate } from "react-router-dom";
+import axios from "axios"; // Import axios for API calls
 import {
   Box,
   Typography,
@@ -36,8 +37,19 @@ function Login() {
     try {
       const provider = new GoogleAuthProvider();
       const result = await signInWithPopup(auth, provider);
-      setUser(result.user.auth.currentUser.email);
-      navigate("/dashboard");
+
+      const { displayName, email } = result.user;
+
+      console.log(displayName, email)
+
+      // Save user data in the database
+      await axios.post("http://localhost:5001/api/users/create-or-update", {
+        name: displayName,
+        email,
+      });
+
+      setUser(result.user);
+      navigate("/dashboard", { state: { name: displayName, email }});
     } catch (error) {
       console.error("Error during login:", error);
     }

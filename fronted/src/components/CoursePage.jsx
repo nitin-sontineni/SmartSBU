@@ -1,4 +1,4 @@
-import React, { useState, useRef } from "react";
+import React, { useState, useEffect } from "react";
 import {
   AppBar,
   Toolbar,
@@ -10,55 +10,78 @@ import {
   List,
   ListItem,
   ListItemText,
-  IconButton,
   TextField,
   Paper,
   Card,
   CardContent,
   CircularProgress,
 } from "@mui/material";
-import CloseIcon from "@mui/icons-material/Close";
-import VisibilityIcon from "@mui/icons-material/Visibility";
 import { useDropzone } from "react-dropzone";
-import { useNavigate } from "react-router-dom";
-import * as pdfjsLib from "pdfjs-dist";
+import { useNavigate, useLocation } from "react-router-dom";
+// import * as pdfjsLib from "pdfjs-dist";
+import axios from "axios";
 
-const Navbar = ({ onLogout }) => {
-  return (
-    <AppBar position="static" sx={{ backgroundColor: "#1976d2" }}>
-      <Toolbar>
-        <Typography variant="h6" sx={{ flexGrow: 1, fontWeight: "bold" }}>
-          SmartSBU
-        </Typography>
-        <Button
-          variant="contained"
-          onClick={onLogout}
-          sx={{
-            backgroundColor: "#ff4081",
-            "&:hover": { backgroundColor: "#e91e63" },
-            color: "#fff",
-          }}
-        >
-          Logout
-        </Button>
-      </Toolbar>
-    </AppBar>
-  );
-};
+const Navbar = ({ onLogout }) => (
+  <AppBar position="static" sx={{ backgroundColor: "#1976d2" }}>
+    <Toolbar>
+      <Typography variant="h6" sx={{ flexGrow: 1, fontWeight: "bold" }}>
+        SmartSBU
+      </Typography>
+      <Button
+        variant="contained"
+        onClick={onLogout}
+        sx={{
+          backgroundColor: "#ff4081",
+          "&:hover": { backgroundColor: "#e91e63" },
+          color: "#fff",
+        }}
+      >
+        Logout
+      </Button>
+    </Toolbar>
+  </AppBar>
+);
 
 const CoursePage = () => {
-  const [files, setFiles] = useState([]);
-  const [savedFiles, setSavedFiles] = useState([]);
-  const [question, setQuestion] = useState(""); // User's question
-  const [primaryResponse, setPrimaryResponse] = useState(null); // For answer1.txt
-  const [followUpResponse, setFollowUpResponse] = useState(null); // For answer2.txt
-  const [isButtonLoading, setIsButtonLoading] = useState(false); // State for button loading
-  const [previewFile, setPreviewFile] = useState(null);
-  const [fileContent, setFileContent] = useState("");
-
-  const pdfCanvasRef = useRef(null);
+  const location = useLocation();
   const navigate = useNavigate();
+  const { email, courseId } = location.state || {};
 
+  // States
+  const [userDetails, setUserDetails] = useState({
+    user_name: "",
+    course_name: "",
+    course_description: "",
+  });
+  const [documents, setDocuments] = useState([]);
+  const [files, setFiles] = useState([]);
+  // const [savedFiles, setSavedFiles] = useState([]);
+  const [question, setQuestion] = useState("");
+  const [primaryResponse, setPrimaryResponse] = useState(null);
+  const [followUpResponse, setFollowUpResponse] = useState(null);
+  const [isButtonLoading, setIsButtonLoading] = useState(false);
+  // const [fileContent, setFileContent] = useState("");
+  // const pdfCanvasRef = useRef(null);
+
+  // Fetch course details and materials
+  useEffect(() => {
+    const fetchCourseDetails = async () => {
+      try {
+        const response = await axios.get(`http://localhost:5001/api/course_details`, {
+          params: { courseId, email },
+        });
+        const { user_name, course_name, course_description, materials } = response.data;
+        setUserDetails({ user_name, course_name, course_description });
+        setDocuments(materials)
+      } catch (error) {
+        console.error("Error fetching course details:", error.message);
+      }
+    };
+
+    fetchCourseDetails();
+  }, [courseId, email, documents]);
+
+  // Dropzone logic
   const onDrop = (acceptedFiles) => {
     const newFiles = acceptedFiles.map((file) => ({
       file,
@@ -73,20 +96,46 @@ const CoursePage = () => {
     maxSize: 200 * 1024 * 1024, // 200MB limit
   });
 
-  const handleRemoveFile = (fileName) => {
-    setFiles((prevFiles) => prevFiles.filter((file) => file.name !== fileName));
-  };
+  const handleSubmitFiles = async () => {
+    if (files.length === 0) {
+      alert("No files to upload!");
+      return;
+    }
 
-  const handleSubmitFiles = () => {
-    setSavedFiles((prevFiles) => [...prevFiles, ...files]); // Move files to savedFiles
-    setFiles([]); // Clear the upload section
-    alert("Files submitted successfully!");
+    const documentNames = files.map((file) => file.name);
+
+    // Create the request payload
+    const payload = {
+      courseId,
+      email,
+      documentNames, // Pass the array of filenames
+    };
+
+    console.log(payload)
+
+
+    try {
+      // Send the POST request
+      const response = await axios.post("http://localhost:5001/api/upload_files", payload, {
+        headers: {
+          "Content-Type": "application/json", // Explicitly set content type
+        },
+      });
+  
+
+      // Update materials list with the uploaded files
+      setDocuments((prevDocuments) => [...prevDocuments, ...response.data.materials]);
+      // setSavedFiles((prevFiles) => [...prevFiles, ...response.data.materials]);
+      setFiles([]); // Clear the upload section
+      alert("Files uploaded successfully!");
+    } catch (error) {
+      console.error("Error uploading files:", error.message);
+      alert("Error uploading files. Please try again.");
+    }
   };
 
   const handleSubmitQuestion = async () => {
     console.log("Question submitted:", question);
-
-    // Show loading state for the button
     setIsButtonLoading(true);
 
     setTimeout(async () => {
@@ -94,13 +143,11 @@ const CoursePage = () => {
         let answerFile;
         let updateResponse;
 
-        // Determine which file to fetch based on the current state
+        // Determine file to fetch
         if (!primaryResponse) {
-          // First question, fetch from answer1.txt
           answerFile = "/answer1.txt";
           updateResponse = setPrimaryResponse;
         } else {
-          // Subsequent question, fetch from answer2.txt
           answerFile = "/answer2.txt";
           updateResponse = setFollowUpResponse;
         }
@@ -111,71 +158,21 @@ const CoursePage = () => {
         }
         const answerContent = await response.text();
 
-        // Update the appropriate response state
         updateResponse({ question, answer: answerContent });
       } catch (error) {
+        let updateResponse;
         console.error("Error fetching answer file:", error);
-
-        if (!primaryResponse) {
-          setPrimaryResponse({ question, answer: "Could not load the answer." });
-        } else {
-          setFollowUpResponse({ question, answer: "Could not load the answer." });
-        }
+        updateResponse({ question, answer: "Could not load the answer." });
       }
 
-      // Reset loading state
       setIsButtonLoading(false);
     }, 5000);
 
-    setQuestion(""); // Clear the input field
+    setQuestion(""); // Clear input
   };
 
   const handleLogout = () => {
     navigate("/");
-  };
-
-  const handleViewFile = async (file) => {
-    setPreviewFile(file);
-
-    if (file.file.type === "text/plain") {
-      const reader = new FileReader();
-      reader.onload = (e) => setFileContent(e.target.result);
-      reader.readAsText(file.file);
-    } else if (file.file.type === "application/pdf") {
-      const reader = new FileReader();
-      reader.onload = async (e) => {
-        const pdfData = new Uint8Array(e.target.result);
-        const pdf = await pdfjsLib.getDocument(pdfData).promise;
-        const page = await pdf.getPage(1);
-        const viewport = page.getViewport({ scale: 1 });
-
-        const canvas = pdfCanvasRef.current;
-        const context = canvas.getContext("2d");
-        canvas.width = viewport.width;
-        canvas.height = viewport.height;
-
-        const renderContext = {
-          canvasContext: context,
-          viewport: viewport,
-        };
-        await page.render(renderContext).promise;
-
-        setFileContent("PDF rendered below.");
-      };
-      reader.readAsArrayBuffer(file.file);
-    } else if (file.file.type.startsWith("image/")) {
-      const reader = new FileReader();
-      reader.onload = (e) =>
-        setFileContent(<img src={e.target.result} alt={file.name} style={{ width: "100%" }} />);
-      reader.readAsDataURL(file.file);
-    } else {
-      setFileContent("Preview not supported for this file type.");
-    }
-  };
-
-  const handleClosePreview = () => {
-    setPreviewFile(null);
-    setFileContent("");
   };
 
   return (
@@ -183,22 +180,20 @@ const CoursePage = () => {
       <Navbar onLogout={handleLogout} />
 
       <Container maxWidth="lg" sx={{ py: 4 }}>
+        <Typography variant="h4" gutterBottom>
+          {userDetails.course_name}: {userDetails.course_description}
+        </Typography>
+
         <Grid container spacing={4}>
+          {/* Left Section: Materials and Upload */}
           <Grid item xs={12} md={4}>
-            <Paper
-              elevation={3}
-              sx={{
-                padding: 3,
-                borderRadius: 3,
-                backgroundColor: "#ffffff",
-                boxShadow: "0px 4px 6px rgba(0, 0, 0, 0.1)",
-              }}
-            >
+            <Paper elevation={3} sx={{ padding: 3, borderRadius: 3 }}>
               <Typography variant="h6" gutterBottom>
-                CSE 512: Machine Learning
+                Course Materials
               </Typography>
-              <Typography variant="body2" gutterBottom>
-                Upload your files below:
+
+              <Typography variant="h6" gutterBottom sx={{ mt: 4 }}>
+                Upload Files
               </Typography>
               <Paper
                 {...getRootProps()}
@@ -209,7 +204,6 @@ const CoursePage = () => {
                   textAlign: "center",
                   cursor: "pointer",
                   marginBottom: 2,
-                  backgroundColor: "#f7f9fc",
                 }}
               >
                 <input {...getInputProps()} />
@@ -219,129 +213,71 @@ const CoursePage = () => {
                 </Button>
               </Paper>
 
-              <List>
-                {files.map((file) => (
-                  <ListItem
-                    key={file.name}
-                    secondaryAction={
-                      <IconButton edge="end" onClick={() => handleRemoveFile(file.name)}>
-                        <CloseIcon />
-                      </IconButton>
-                    }
-                  >
-                    <ListItemText primary={file.name} secondary={`${file.size} MB`} />
-                  </ListItem>
-                ))}
-              </List>
-
               {files.length > 0 && (
-                <Button variant="contained" fullWidth onClick={handleSubmitFiles} sx={{ marginTop: 2 }}>
+                <Button
+                  variant="contained"
+                  fullWidth
+                  onClick={handleSubmitFiles}
+                  sx={{ marginTop: 2 }}
+                >
                   Submit Files
                 </Button>
               )}
 
-              {savedFiles.length > 0 && (
-                <Box sx={{ marginTop: 4 }}>
-                  <Typography variant="h6" gutterBottom>
-                    Saved Files
-                  </Typography>
-                  <List>
-                    {savedFiles.map((file) => (
-                      <ListItem
-                        key={file.name}
-                        secondaryAction={
-                          <IconButton edge="end" onClick={() => handleViewFile(file)}>
-                            <VisibilityIcon />
-                          </IconButton>
-                        }
-                      >
-                        <ListItemText primary={file.name} secondary={`${file.size} MB`} />
-                      </ListItem>
-                    ))}
-                  </List>
-                </Box>
+              {documents.length > 0 ? (
+                <List>
+                  {documents.map((document, index) => (
+                    <ListItem key={index}>
+                      <ListItemText primary={document} />
+                    </ListItem>
+                  ))}
+                </List>
+              ) : (
+                <Typography>No Documents Uploaded.</Typography>
               )}
             </Paper>
           </Grid>
 
+          {/* Right Section: Question Asking */}
           <Grid item xs={12} md={8}>
-            <Paper
-              elevation={3}
-              sx={{
-                padding: 4,
-                borderRadius: 3,
-                textAlign: "center",
-                backgroundColor: "#ffffff",
-                boxShadow: "0px 4px 6px rgba(0, 0, 0, 0.1)",
-              }}
-            >
+            <Paper elevation={3} sx={{ padding: 4, borderRadius: 3 }}>
               {primaryResponse && (
-                <Card
-                  elevation={4}
-                  sx={{
-                    backgroundColor: "#e3f2fd",
-                    padding: 2,
-                    marginBottom: 3,
-                    borderRadius: 3,
-                    textAlign: "left",
-                  }}
-                >
+                <Card elevation={4} sx={{ padding: 2, marginBottom: 3 }}>
                   <CardContent>
-                    <Typography variant="h6" sx={{ fontWeight: "bold", marginBottom: 1 }}>
+                    <Typography variant="h6" sx={{ fontWeight: "bold" }}>
                       Question:
                     </Typography>
-                    <Typography variant="body1" sx={{ marginBottom: 2 }}>
-                      {primaryResponse.question}
-                    </Typography>
-                    <Typography variant="h6" sx={{ fontWeight: "bold", marginBottom: 1 }}>
+                    <Typography>{primaryResponse.question}</Typography>
+                    <Typography variant="h6" sx={{ fontWeight: "bold", mt: 2 }}>
                       Answer:
                     </Typography>
-                    <pre style={{ fontFamily: "inherit", whiteSpace: "pre-wrap" }}>
-                      {primaryResponse.answer}
-                    </pre>
+                    <pre>{primaryResponse.answer}</pre>
                   </CardContent>
                 </Card>
               )}
 
               {followUpResponse && (
-                <Card
-                  elevation={4}
-                  sx={{
-                    backgroundColor: "#ffecb3",
-                    padding: 2,
-                    marginBottom: 3,
-                    borderRadius: 3,
-                    textAlign: "left",
-                  }}
-                >
+                <Card elevation={4} sx={{ padding: 2, marginBottom: 3 }}>
                   <CardContent>
-                    <Typography variant="h6" sx={{ fontWeight: "bold", marginBottom: 1 }}>
+                    <Typography variant="h6" sx={{ fontWeight: "bold" }}>
                       Question:
                     </Typography>
-                    <Typography variant="body1" sx={{ marginBottom: 2 }}>
-                      {followUpResponse.question}
-                    </Typography>
-                    <Typography variant="h6" sx={{ fontWeight: "bold", marginBottom: 1 }}>
+                    <Typography>{followUpResponse.question}</Typography>
+                    <Typography variant="h6" sx={{ fontWeight: "bold", mt: 2 }}>
                       Answer:
                     </Typography>
-                    <pre style={{ fontFamily: "inherit", whiteSpace: "pre-wrap" }}>
-                      {followUpResponse.answer}
-                    </pre>
+                    <pre>{followUpResponse.answer}</pre>
                   </CardContent>
                 </Card>
               )}
 
-              {/* <Typography variant="h4" gutterBottom>
-                SmartSBU
-              </Typography> */}
               <Typography variant="body1" gutterBottom>
                 Ask questions here:
               </Typography>
-
               <TextField
                 variant="outlined"
                 fullWidth
-                placeholder="Ask a question from the uploaded files"
+                placeholder="Ask your question here"
                 value={question}
                 onChange={(e) => setQuestion(e.target.value)}
                 sx={{ maxWidth: "600px", marginBottom: 2 }}
@@ -352,9 +288,9 @@ const CoursePage = () => {
                 color="primary"
                 onClick={handleSubmitQuestion}
                 sx={{ marginBottom: 2 }}
-                disabled={isButtonLoading} // Disable the button while loading
+                disabled={isButtonLoading}
               >
-                {isButtonLoading ? <CircularProgress size={24} color="inherit" /> : "Submit Question"}
+                {isButtonLoading ? <CircularProgress size={24} /> : "Submit Question"}
               </Button>
             </Paper>
           </Grid>

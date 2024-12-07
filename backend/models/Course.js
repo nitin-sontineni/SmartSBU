@@ -1,10 +1,10 @@
 const mongoose = require('mongoose');
 
 const courseSchema = mongoose.Schema({
-  name: { type: String, required: true },
-  description: { type: String },
-  materials: [String], // Array of file URLs or paths
-  queries: [String], // Array of user questions
+  user_mail: { type: String, required: true },
+  course_name: { type: String, required: true },
+  course_description: { type: String },
+  materials: [{ type: String }], // Array of integers
 });
 
 const Course = mongoose.model('Course', courseSchema);
