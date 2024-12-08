@@ -1,5 +1,4 @@
 [build]
-base = "frontend"       # Specify the frontend directory
 publish = "frontend/build" # Specify the directory to publish
 command = "npm run build"  # Specify the build command for the frontend
 
