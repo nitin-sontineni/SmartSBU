@@ -67,7 +67,7 @@ const CoursePage = () => {
         });
         const { user_name, course_name, course_description, materials } = response.data;
         setUserDetails({ user_name, course_name, course_description });
-        setDocuments(materials);
+        setDocuments(Array.isArray(materials) ? materials : []);
       } catch (error) {
         console.error("Error fetching course details:", error.message);
       }
@@ -200,7 +200,7 @@ const CoursePage = () => {
                 </Button>
               )}
 
-              {documents.length > 0 ? (
+              {Array.isArray(documents) && documents.length > 0 ? (
                 <List>
                   {documents.map((document, index) => (
                     <ListItem key={index}>

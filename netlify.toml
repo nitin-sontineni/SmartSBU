@@ -1,7 +1,0 @@
-[build]
-publish = "frontend/build" # Specify the directory to publish
-command = "npm run build"  # Specify the build command for the frontend
-
-# Ignore backend directory during build
-[functions]
-directory = "frontend/functions"

@@ -4,12 +4,20 @@ const User = require('../models/User');
 
 const getCourses = async (req, res) => {
   try {
-    const courses = await Course.find({});
+    const { email } = req.query;
+
+    if (!email) {
+      return res.status(400).json({ message: 'Email is required to fetch courses.' });
+    }
+
+    const courses = await Course.find({ user_mail: email });
     res.json(courses);
   } catch (error) {
+    console.error('Error fetching courses:', error);
     res.status(500).json({ message: error.message });
   }
 };
+
 
 const createCourse = async (req, res) => {
   try {
