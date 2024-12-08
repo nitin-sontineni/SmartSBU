@@ -4,9 +4,6 @@ const Course = require("../models/Course");
 // Simplified upload logic to handle filenames only
 const uploadFiles = async (req, res) => {
   try {
-    console.log("Received request to upload files:", req.query);
-    console.log("Uploaded file names:", req.body.documentNames);
-
     const { courseId, email, documentNames } = req.body;
 
     // Validate request data

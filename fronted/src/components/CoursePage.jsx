@@ -125,7 +125,7 @@ const CoursePage = () => {
     try {
       const response = await axios.post(
         "http://localhost:5001/api/get_answer",
-        { question, courseId, email },
+        { question, courseId },
         { headers: { "Content-Type": "application/json" } }
       );
 

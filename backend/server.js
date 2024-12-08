@@ -25,6 +25,7 @@ app.use('/api/users', require('./routes/userRoutes'));
 app.use('/api/courses', require('./routes/courseRoutes'));
 app.use('/api/course_details', require('./routes/courseDetails'));
 app.use('/api/upload_files', require('./routes/fileUpload'));
+app.use('/api/get_answer', require('./routes/getResponse'));
 
 // Start the server
 const PORT = process.env.PORT || 5001;

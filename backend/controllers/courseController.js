@@ -44,8 +44,6 @@ const getCourseById = async (req, res) => {
 };
 
 const getCourseDetails = async (req, res) => {
-  console.log('Incoming request query:', req.query);
-
   try {
     const { courseId, email } = req.query;
 
