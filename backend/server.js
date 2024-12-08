@@ -14,11 +14,31 @@ const app = express();
 connectDB();
 
 // Middleware
+// app.use(cors({
+//     origin: 'http://localhost:3000',
+//     methods: 'GET,POST,PUT,DELETE',
+//     credentials: true,
+// }));
+
+const allowedOrigins = [
+    'http://localhost:3000',       // Development frontend
+    'https://smartsbu.onrender.com' // Production frontend
+];
+
 app.use(cors({
-    origin: 'http://localhost:3000',
-    methods: 'GET,POST,PUT,DELETE',
-    credentials: true,
+    origin: function (origin, callback) {
+        // Allow requests with no origin (like mobile apps or curl requests)
+        if (!origin) return callback(null, true);
+
+        if (allowedOrigins.includes(origin)) {
+            return callback(null, true);
+        } else {
+            return callback(new Error('Not allowed by CORS'));
+        }
+    },
+    credentials: true, // Allow cookies or Authorization headers
 }));
+
 app.use(express.json());
 
 // Routes

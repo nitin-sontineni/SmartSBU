@@ -55,7 +55,6 @@ const Dashboard = () => {
         const response = await axios.get("http://localhost:5001/api/courses", {
           params: { email }, // Pass email as query parameter
         });
-        console.log("Courses API Response:", response.data);
         setCourses(Array.isArray(response.data) ? response.data : []);
       } catch (error) {
         console.error("Error fetching courses:", error.message);
