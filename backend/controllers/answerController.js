@@ -11,7 +11,7 @@ const getAnswer = async (req, res) => {
 
   try {
     // Spawn the Python process
-    const pythonProcess = spawn("python3", ["process_question.py", question]);
+    const pythonProcess = spawn("python3", ["/Users/nitinsontineni/Desktop/smart-sbu/backend/llama-cpp-python/llama-cpp-python/qualitycheck.py", question]);
 
     let pythonOutput = "";
     pythonProcess.stdout.on("data", (data) => {

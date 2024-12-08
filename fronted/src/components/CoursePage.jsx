@@ -218,19 +218,60 @@ const CoursePage = () => {
           <Grid item xs={12} md={8}>
             <Paper elevation={3} sx={{ padding: 4, borderRadius: 3 }}>
               {responses.map((response, index) => (
-                <Card key={index} elevation={4} sx={{ padding: 2, marginBottom: 3 }}>
+                <Card
+                  key={index}
+                  elevation={4}
+                  sx={{
+                    padding: 2,
+                    marginBottom: 3,
+                    borderRadius: 2,
+                    boxShadow: "0px 4px 10px rgba(0, 0, 0, 0.1)", // Subtle shadow
+                    border: "1px solid #e0e0e0", // Light border
+                  }}
+                >
                   <CardContent>
-                    <Typography variant="h6" sx={{ fontWeight: "bold" }}>
+                    {/* Question Section */}
+                    <Typography
+                      variant="h6"
+                      sx={{ fontWeight: "bold", color: "#3f51b5", marginBottom: 1 }}
+                    >
                       Question:
                     </Typography>
-                    <Typography>{response.question}</Typography>
-                    <Typography variant="h6" sx={{ fontWeight: "bold", mt: 2 }}>
+                    <Typography
+                      variant="body1"
+                      sx={{ marginBottom: 2, lineHeight: 1.5 }}
+                    >
+                      {response.question}
+                    </Typography>
+
+                    {/* Answer Section */}
+                    <Typography
+                      variant="h6"
+                      sx={{ fontWeight: "bold", color: "#4caf50", marginBottom: 1 }}
+                    >
                       Answer:
                     </Typography>
-                    <pre>{response.answer}</pre>
+                    <Box
+                      component="pre"
+                      sx={{
+                        whiteSpace: "pre-wrap", // Enables text wrapping
+                        wordWrap: "break-word", // Breaks long words
+                        overflowX: "auto", // Horizontal scroll if necessary
+                        backgroundColor: "#f9fbe7", // Light greenish background
+                        padding: 2,
+                        borderRadius: 2,
+                        fontFamily: "Roboto, sans-serif", // Use clean font
+                        fontSize: "0.95rem", // Slightly smaller text for answers
+                        color: "#424242", // Neutral dark gray color
+                        lineHeight: 1.6, // Improve readability
+                      }}
+                    >
+                      {response.answer}
+                    </Box>
                   </CardContent>
                 </Card>
               ))}
+
 
               <Typography variant="body1" gutterBottom>
                 Ask questions here:
