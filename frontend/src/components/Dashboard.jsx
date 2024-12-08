@@ -52,15 +52,20 @@ const Dashboard = () => {
   useEffect(() => {
     const fetchCourses = async () => {
       try {
-        const response = await axios.get("http://localhost:5001/api/courses");
-        setCourses(response.data);
+        const response = await axios.get("http://localhost:5001/api/courses", {
+          params: { email }, // Pass email as query parameter
+        });
+        console.log("Courses API Response:", response.data);
+        setCourses(Array.isArray(response.data) ? response.data : []);
       } catch (error) {
         console.error("Error fetching courses:", error.message);
       }
     };
 
-    fetchCourses();
-  }, []);
+    if (email) {
+      fetchCourses();
+    }
+  }, [email]);
 
   const handleInputChange = (e) => {
     const { name, value } = e.target;
@@ -173,11 +178,12 @@ const Dashboard = () => {
         </Box>
 
         {/* Your Courses Section */}
-        <Typography variant="h5" gutterBottom>
+        <Typography variant="h5" gutterBottom sx={{ marginBottom: 2 }}>
           Your Courses
         </Typography>
         <Grid container spacing={3}>
-          {courses.map((course) => (
+        {Array.isArray(courses) && courses.length > 0 ? (
+          courses.map((course) => (
             <Grid item xs={12} sm={6} md={4} key={course._id}>
               <Card
                 sx={{
@@ -207,7 +213,20 @@ const Dashboard = () => {
                 </CardActions>
               </Card>
             </Grid>
-          ))}
+          ))
+        ) :
+        (
+          <Typography
+            variant="subtitle1"
+              sx={{
+                marginTop: 2, // Add spacing above the text
+                fontStyle: "italic", // Optional: Add some styling
+                textAlign: "center",
+              }}
+            >
+            No courses available
+          </Typography>
+        )}
         </Grid>
       </Container>
     </Box>
