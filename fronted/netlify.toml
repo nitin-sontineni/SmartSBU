@@ -1,0 +1,8 @@
+[build]
+base = "frontend"       # Path to the frontend folder
+publish = "frontend/build" # Folder to publish
+command = "npm run build"  # Command to build the frontend
+
+# Ignore backend folder
+[functions]
+directory = "frontend/functions"
