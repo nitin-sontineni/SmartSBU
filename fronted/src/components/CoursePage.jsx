@@ -18,7 +18,6 @@ import {
 } from "@mui/material";
 import { useDropzone } from "react-dropzone";
 import { useNavigate, useLocation } from "react-router-dom";
-// import * as pdfjsLib from "pdfjs-dist";
 import axios from "axios";
 
 const Navbar = ({ onLogout }) => (
@@ -55,13 +54,9 @@ const CoursePage = () => {
   });
   const [documents, setDocuments] = useState([]);
   const [files, setFiles] = useState([]);
-  // const [savedFiles, setSavedFiles] = useState([]);
   const [question, setQuestion] = useState("");
-  const [primaryResponse, setPrimaryResponse] = useState(null);
-  const [followUpResponse, setFollowUpResponse] = useState(null);
+  const [responses, setResponses] = useState([]); // Array to store multiple Q&A
   const [isButtonLoading, setIsButtonLoading] = useState(false);
-  // const [fileContent, setFileContent] = useState("");
-  // const pdfCanvasRef = useRef(null);
 
   // Fetch course details and materials
   useEffect(() => {
@@ -72,14 +67,14 @@ const CoursePage = () => {
         });
         const { user_name, course_name, course_description, materials } = response.data;
         setUserDetails({ user_name, course_name, course_description });
-        setDocuments(materials)
+        setDocuments(materials);
       } catch (error) {
         console.error("Error fetching course details:", error.message);
       }
     };
 
     fetchCourseDetails();
-  }, [courseId, email, documents]);
+  }, [courseId, email]);
 
   // Dropzone logic
   const onDrop = (acceptedFiles) => {
@@ -104,28 +99,13 @@ const CoursePage = () => {
 
     const documentNames = files.map((file) => file.name);
 
-    // Create the request payload
-    const payload = {
-      courseId,
-      email,
-      documentNames, // Pass the array of filenames
-    };
-
-    console.log(payload)
-
-
     try {
-      // Send the POST request
-      const response = await axios.post("http://localhost:5001/api/upload_files", payload, {
-        headers: {
-          "Content-Type": "application/json", // Explicitly set content type
-        },
+      const response = await axios.post("http://localhost:5001/api/upload_files", {
+        courseId,
+        email,
+        documentNames,
       });
-  
-
-      // Update materials list with the uploaded files
       setDocuments((prevDocuments) => [...prevDocuments, ...response.data.materials]);
-      // setSavedFiles((prevFiles) => [...prevFiles, ...response.data.materials]);
       setFiles([]); // Clear the upload section
       alert("Files uploaded successfully!");
     } catch (error) {
@@ -135,38 +115,34 @@ const CoursePage = () => {
   };
 
   const handleSubmitQuestion = async () => {
-    console.log("Question submitted:", question);
+    if (!question.trim()) {
+      alert("Please enter a question before submitting.");
+      return;
+    }
+
     setIsButtonLoading(true);
 
-    setTimeout(async () => {
-      try {
-        let answerFile;
-        let updateResponse;
+    try {
+      const response = await axios.post(
+        "http://localhost:5001/api/get_answer",
+        { question, courseId, email },
+        { headers: { "Content-Type": "application/json" } }
+      );
 
-        // Determine file to fetch
-        if (!primaryResponse) {
-          answerFile = "/answer1.txt";
-          updateResponse = setPrimaryResponse;
-        } else {
-          answerFile = "/answer2.txt";
-          updateResponse = setFollowUpResponse;
-        }
-
-        const response = await fetch(answerFile);
-        if (!response.ok) {
-          throw new Error(`Failed to load ${answerFile}.`);
-        }
-        const answerContent = await response.text();
-
-        updateResponse({ question, answer: answerContent });
-      } catch (error) {
-        let updateResponse;
-        console.error("Error fetching answer file:", error);
-        updateResponse({ question, answer: "Could not load the answer." });
-      }
-
+      // Add new response to the array
+      setResponses((prevResponses) => [
+        ...prevResponses,
+        { question, answer: response.data.answer },
+      ]);
+    } catch (error) {
+      console.error("Error fetching the answer:", error);
+      setResponses((prevResponses) => [
+        ...prevResponses,
+        { question, answer: "An error occurred while fetching the answer." },
+      ]);
+    } finally {
       setIsButtonLoading(false);
-    }, 5000);
+    }
 
     setQuestion(""); // Clear input
   };
@@ -241,35 +217,20 @@ const CoursePage = () => {
           {/* Right Section: Question Asking */}
           <Grid item xs={12} md={8}>
             <Paper elevation={3} sx={{ padding: 4, borderRadius: 3 }}>
-              {primaryResponse && (
-                <Card elevation={4} sx={{ padding: 2, marginBottom: 3 }}>
+              {responses.map((response, index) => (
+                <Card key={index} elevation={4} sx={{ padding: 2, marginBottom: 3 }}>
                   <CardContent>
                     <Typography variant="h6" sx={{ fontWeight: "bold" }}>
                       Question:
                     </Typography>
-                    <Typography>{primaryResponse.question}</Typography>
+                    <Typography>{response.question}</Typography>
                     <Typography variant="h6" sx={{ fontWeight: "bold", mt: 2 }}>
                       Answer:
                     </Typography>
-                    <pre>{primaryResponse.answer}</pre>
+                    <pre>{response.answer}</pre>
                   </CardContent>
                 </Card>
-              )}
-
-              {followUpResponse && (
-                <Card elevation={4} sx={{ padding: 2, marginBottom: 3 }}>
-                  <CardContent>
-                    <Typography variant="h6" sx={{ fontWeight: "bold" }}>
-                      Question:
-                    </Typography>
-                    <Typography>{followUpResponse.question}</Typography>
-                    <Typography variant="h6" sx={{ fontWeight: "bold", mt: 2 }}>
-                      Answer:
-                    </Typography>
-                    <pre>{followUpResponse.answer}</pre>
-                  </CardContent>
-                </Card>
-              )}
+              ))}
 
               <Typography variant="body1" gutterBottom>
                 Ask questions here:
