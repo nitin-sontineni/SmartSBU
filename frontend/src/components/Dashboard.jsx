@@ -18,6 +18,9 @@ import {
   Paper,
 } from "@mui/material";
 
+const BACKEND_URL = process.env.REACT_APP_BACKEND_URL || 'http://localhost:5001';
+
+
 const Navbar = ({ onLogout }) => (
   <AppBar position="static" sx={{ backgroundColor: "#1976d2" }}>
     <Toolbar>
@@ -52,7 +55,7 @@ const Dashboard = () => {
   useEffect(() => {
     const fetchCourses = async () => {
       try {
-        const response = await axios.get("http://localhost:5001/api/courses", {
+        const response = await axios.get(`${BACKEND_URL}/api/courses`, {
           params: { email }, // Pass email as query parameter
         });
         setCourses(Array.isArray(response.data) ? response.data : []);
@@ -89,7 +92,7 @@ const Dashboard = () => {
 
     if (!hasError) {
       try {
-        const response = await axios.post("http://localhost:5001/api/courses", {
+        const response = await axios.post(`${BACKEND_URL}/api/courses`, {
           user_mail: email,
           course_name: newCourse.number,
           course_description: newCourse.name,

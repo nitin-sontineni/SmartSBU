@@ -41,6 +41,8 @@ const Navbar = ({ onLogout }) => (
   </AppBar>
 );
 
+const BACKEND_URL = process.env.REACT_APP_BACKEND_URL || 'http://localhost:5001';
+
 const CoursePage = () => {
   const location = useLocation();
   const navigate = useNavigate();
@@ -62,7 +64,7 @@ const CoursePage = () => {
   useEffect(() => {
     const fetchCourseDetails = async () => {
       try {
-        const response = await axios.get(`http://localhost:5001/api/course_details`, {
+        const response = await axios.get(`${BACKEND_URL}/api/course_details`, {
           params: { courseId, email },
         });
         const { user_name, course_name, course_description, materials } = response.data;
@@ -100,7 +102,7 @@ const CoursePage = () => {
     const documentNames = files.map((file) => file.name);
 
     try {
-      const response = await axios.post("http://localhost:5001/api/upload_files", {
+      const response = await axios.post(`${BACKEND_URL}/api/upload_files`, {
         courseId,
         email,
         documentNames,
@@ -124,7 +126,7 @@ const CoursePage = () => {
 
     try {
       const response = await axios.post(
-        "http://localhost:5001/api/get_answer",
+        `${BACKEND_URL}/api/get_answer`,
         { question, courseId },
         { headers: { "Content-Type": "application/json" } }
       );

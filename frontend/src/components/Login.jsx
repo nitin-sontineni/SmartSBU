@@ -14,6 +14,8 @@ import {
   Container,
 } from "@mui/material";
 
+const BACKEND_URL = process.env.REACT_APP_BACKEND_URL || 'http://localhost:5001';
+
 // Create a Material-UI theme
 const theme = createTheme({
   palette: {
@@ -43,7 +45,7 @@ function Login() {
       console.log(displayName, email)
 
       // Save user data in the database
-      await axios.post("http://localhost:5001/api/users/create-or-update", {
+      await axios.post(`${BACKEND_URL}/api/users/create-or-update`, {
         name: displayName,
         email,
       });
