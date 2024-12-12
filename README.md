@@ -2,8 +2,6 @@
 
 SmartSBU is a powerful web application designed to streamline and enhance the learning experience for students. With its dynamic features, SmartSBU simplifies the creation and interaction with course materials using Generative AI while ensuring a seamless and intuitive user experience.
 
----
-
 ## Features
 
 ### Course Management
