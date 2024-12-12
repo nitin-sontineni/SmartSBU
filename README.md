@@ -23,7 +23,6 @@ SmartSBU is a powerful web application designed to streamline and enhance the le
 ### Dynamic Navigation
 - Intuitive navigation between the **dashboard**, **course pages**, and other key sections.  
 
----
 
 ## Tech Stack
 
@@ -39,7 +38,6 @@ SmartSBU is a powerful web application designed to streamline and enhance the le
 - **React Router**: Smooth routing and URL management.  
 - **React Hooks**: State management and functional components.  
 
----
 
 ## Setup Instructions
 
@@ -70,7 +68,6 @@ Open your browser and navigate to:
 http://localhost:3000
 ```
 
----
 
 ## Future Enhancements
 
@@ -83,7 +80,6 @@ http://localhost:3000
 - **AI Query Integration**: Use fine-tuned LLMs for answering questions based on course materials.  
 - **Collaboration Tools**: Add discussion boards and group workspaces.  
 
----
 
 ## Contribution Guidelines
 
@@ -95,13 +91,10 @@ We welcome contributions to improve SmartSBU. To get started:
    ```
 3. Commit your changes and submit a pull request.
 
----
 
 ## License
 
 This project is licensed under the [MIT License](LICENSE). By contributing, you agree to abide by its terms.
-
----
 
 ## Acknowledgements
 
