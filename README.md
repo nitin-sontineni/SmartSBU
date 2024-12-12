@@ -10,11 +10,10 @@ SmartSBU is a powerful web application designed to streamline and enhance the le
 
 ### File Upload
 - Drag-and-drop interface for uploading course materials, supporting multiple file formats.  
-- Handles **large file uploads** (up to 200MB) with robust storage integration.
+- Handles **large file uploads** with robust storage integration.
 
-### Intelligent Interaction (Future-ready AI Integration)
-- **Ask Questions**: Leverage advanced AI to ask questions about uploaded materials (planned).  
-- Context-aware responses powered by fine-tuned Large Language Models (LLMs).  
+### Intelligent AI Interaction
+- Context-aware responses powered by fine-tuned Large Language Models (LLMs) using the uploaded materials.  
 
 ### Authentication
 - Secure **Google-based authentication** using Firebase for login and logout.  
