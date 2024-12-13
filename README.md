@@ -97,7 +97,7 @@ To enable authentication and storage, configure Firebase for your project:
 Set up a `.env` file in the **backend** directory to store environment variables:
 ```env
 MONGO_URI=your_mongodb_connection_string
-PORT=5000
+PORT=5001
 ```
 Replace `your_mongodb_connection_string` with the URI for your MongoDB database. If using **MongoDB Atlas**, you can find this in the Atlas console.
 
@@ -126,23 +126,6 @@ Once both servers are running, open your browser and navigate to:
 ```
 http://localhost:3000
 ```
-
----
-
-### Deployment Instructions
-To deploy the application:
-
-#### Backend:
-Deploy the **backend** server to a cloud hosting service such as **Heroku** or **AWS**. Ensure the MongoDB connection string is correctly set in the environment variables on the hosting platform.
-
-#### Frontend:
-Deploy the **frontend** application using platforms like **Vercel**, **Netlify**, or **Firebase Hosting**:
-1. Build the project:
-   ```bash
-   npm run build
-   ```
-2. Upload the contents of the `build/` folder to the hosting platform.
-
 ---
 
 ## Future Enhancements
