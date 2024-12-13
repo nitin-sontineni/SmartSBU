@@ -3,7 +3,7 @@ import { initializeApp } from "firebase/app";
 import { getAuth, GoogleAuthProvider } from "firebase/auth";
 
 // Your Firebase config from Firebase Console
-const firebaseConfig = "paste your Firebase confi here"
+const firebaseConfig = "paste your Firebase configs here"
 
 // Initialize Firebase
 const app = initializeApp(firebaseConfig);
